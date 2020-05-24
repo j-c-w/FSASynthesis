@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'antlr'
+
+dependencies {
+    antlr "org.antlr:antlr4:4.5.3"
+}
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src', 'generated-src' ];
+		}
+
+		antlr {
+			srcDirs = ['src/main/parser'];
+		}
+	}
+}
+
+generateGrammarSource {
+    maxHeapSize = "64m"
+
+    // Keep a copy of generated sources
+    doLast {
+        println "Copying generated grammar lexer/parser files to main directory."
+        copy {
+            from "${buildDir}/generated-src/antlr/main"
+            into "generated-src/main/parser"
+        }
+    }
+}
+
+clean.doLast {
+    file('generated-src').deleteDir()
+}
