@@ -1,3 +1,4 @@
 .gradle
 generated-src/
 build/
+tags
