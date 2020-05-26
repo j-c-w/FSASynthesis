@@ -24,7 +24,13 @@ public class Main {
 
 		// Generate the generator.
 		FSA fsa = generator.generate();
-		fsa.print();
+		if (fsa == null) {
+			System.out.println("Failed to synthesize, error message");
+			System.out.println(generator.getDiagnostic());
+		} else {
+			System.out.println("Successfully synthesized!");
+			fsa.print();
+		}
 	}
 
 	public static ParseTree parse(String contents) {

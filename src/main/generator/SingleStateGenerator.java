@@ -55,7 +55,6 @@ public class SingleStateGenerator implements Generator {
 			assigned[i] = 0;
 		}
 
-		RegexCharacterListGenerator charGenerator = new RegexCharacterListGenerator();
 		for (int i = 0; i < fromElementGroups.size(); i ++) {
 			// Get the character set for each item in the element
 			// list.
@@ -73,15 +72,13 @@ public class SingleStateGenerator implements Generator {
 				return null;
 			}
 
+			RegexCharacterListGenerator fromSet = new RegexCharacterListGenerator();
 			// For the from set:
-			charGenerator.reset();
-			walker.walk(charGenerator, fromEltGroup.tree());
-			ArrayList<Character> fromSet = charGenerator.getCharacterList();
+			walker.walk(fromSet, fromEltGroup.tree());
 
 			// For the to set:
-			charGenerator.reset();
-			walker.walk(charGenerator, toEltGroup.tree());
-			ArrayList<Character> toSet = charGenerator.getCharacterList();
+			RegexCharacterListGenerator toSet = new RegexCharacterListGenerator();
+			walker.walk(toSet, toEltGroup.tree());
 
 			// Now, make sure that (a) each element in fromSet points
 			// to an element in toSet.  Also make sure that each
@@ -91,11 +88,13 @@ public class SingleStateGenerator implements Generator {
 			// we need to make sure that the string "bead" is not
 			// converted to a match.
 			switch (fromEltMatchType) {
+				case PLUS_MATCH:
+				case STAR_MATCH:
 				case EXACT_MATCH:
 					// Go through each element in the from
 					// set and map it to the to set.
-					if (fromSet.size() != toSet.size()) {
-						diagnostic = "Exact match regions of different lengths (" + Integer.toString(fromSet.size()) + " vs " + Integer.toString(toSet.size()) + ")";
+					if (fromSet.getLength() != toSet.getLength()) {
+						diagnostic = "Exact match regions of different lengths (" + Integer.toString(fromSet.getLength()) + " vs " + Integer.toString(toSet.getLength()) + ")";
 						// TODO -- This case could be improved.
 						// This is the case where we could have
 						// a translation table with more than
@@ -103,21 +102,18 @@ public class SingleStateGenerator implements Generator {
 						return null;
 					}
 
-					for (int j = 0; j < fromSet.size(); j ++) {
-						lookuptable[fromSet.get(j)] = toSet.get(j);
-						assigned[fromSet.get(j)] += 1;
-					}
-					break;
-				case STAR_MATCH:
-					// Go through each elt in the from set
-					// and map it to the first elt of the to set.
-					// This could be improved if there
-					// is a collision (e.g. by choosing the second
-					// elt of the set).
-				case PLUS_MATCH:
-					// Same as star match.
-					for (Character c : fromSet) {
-						lookuptable[c] = toSet.get(0);
+					for (int j = 0; j < fromSet.getLength(); j ++) {
+						char[] valid_chars_from = fromSet.getValidCharactersAtIndex(j);
+						char[] valid_chars_to = toSet.getValidCharactersAtIndex(j);
+
+						for (char from: valid_chars_from) {
+							if (lookuptable[from] != valid_chars_to[0]) {
+								// Only increment the assigment counter if we actually
+								// change the list entries.
+								assigned[from] += 1;
+								lookuptable[from] = valid_chars_to[0];
+							}
+						}
 					}
 					break;
 				case ALTERNATIVES_MATCH:

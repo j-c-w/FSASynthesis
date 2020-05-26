@@ -22,11 +22,6 @@ public class RegexSplitWalker extends PCREBaseListener {
 	}
 
 	@Override
-	public void enterEveryRule(ParserRuleContext ctx) {
-		System.out.println("Entered rule " + ctx.getText());
-	}
-
-	@Override
 	public void enterElement(PCREParser.ElementContext ctx) {
 		// We expect this to be an in-order walk, so
 		// put this elemnt on the list provided that it
