@@ -8,10 +8,20 @@ application {
 
 dependencies {
     antlr "org.antlr:antlr4:4.8"
+	testImplementation 'junit:junit:4.12'
+
+	testCompile 'junit:junit:4.12'
+    compile 'junit:junit:4.12'
 }
 
 repositories {
 	mavenCentral()
+}
+
+test {
+	useJUnit()
+
+	maxHeapSize = '1G'
 }
 
 sourceSets {
@@ -22,6 +32,12 @@ sourceSets {
 
 		antlr {
 			srcDirs = ['src/main/parser'];
+		}
+	}
+
+	test {
+		java {
+			srcDirs = ['src/main/test'];
 		}
 	}
 }
