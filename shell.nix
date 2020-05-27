@@ -3,6 +3,6 @@
 with pkgs;
 
 mkShell {
-	buildInputs = [ python38 python38Packages.antlr4-python3-runtime antlr4 jdk gradle ctags ];
+	buildInputs = [ python38 python38Packages.antlr4-python3-runtime antlr4 jdk gradle ctags cloc ];
 	SHELL_NAME = "RegexSynthesis";
 }

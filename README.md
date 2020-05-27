@@ -12,3 +12,10 @@ After entering a nix-shell (using `nix-shell` in the TLD),
 or installing all the prereqs in the shell.nix file, run:
 
 > gradle run --args "<RegexToCompileTo> <RegexToCompileFrom> [other flags]"
+
+#Testing
+
+After installing and entering a nix-shell (as above),
+do
+
+> gradle test
