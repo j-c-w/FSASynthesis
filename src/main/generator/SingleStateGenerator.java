@@ -125,7 +125,7 @@ public class SingleStateGenerator implements Generator {
 
 		for (int i = 0; i < 256; i ++) {
 			if (assigned[i] > 1) {
-				diagnostic = "Lookup table index " + Integer.toString(i) + " assigned multiple times";
+				diagnostic = "Lookup table index " + Character.toString((char)i) + " assigned multiple times";
 				return null;
 			}
 		}
