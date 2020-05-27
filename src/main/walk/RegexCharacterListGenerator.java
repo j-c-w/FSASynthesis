@@ -56,7 +56,7 @@ public class RegexCharacterListGenerator extends PCREBaseListener {
 			// to list.  Probably we shouldn't ignore it...
 		} else {
 			String contents = node.getText();
-			assert(contents.length() == 0);
+			assert(contents.length() == 1);
 			char character = contents.charAt(0);
 			if (character == '-') {
 				characterClassChars.add(character);

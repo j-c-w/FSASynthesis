@@ -86,11 +86,11 @@ public class Main {
 			System.out.println(regex.substring(1, regex.length() - 1));
 		}
 
-		String[][] messages = new String[lines.size()][lines.size()];
-		FSA[][] machines = new FSA[lines.size()][lines.size()];
-
 		// Compile between each pair of strings.
 		for (int i = 0; i < lines.size(); i ++) {
+			String[] messages = new String[lines.size()];
+			FSA[] machines = new FSA[lines.size()];
+
 			String compileTo = lines.get(i);
 			System.out.println("Compiling to " + Integer.toString(i) + "(/" + Integer.toString(lines.size()) + ")");
 			for (int j = 0; j < lines.size(); j ++) {
@@ -105,32 +105,31 @@ public class Main {
 				// And get the FSA if it exists.
 				FSA fsa = generator.generate();
 				if (fsa == null) {
-					messages[i][j] = generator.getDiagnostic();
+					messages[j] = generator.getDiagnostic();
 				} else {
-					messages[i][j] = "Success!";
+					messages[j] = "Success!";
 				}
-				machines[i][j] = fsa;
+				machines[j] = fsa;
 			}
-		}
 
-		StringBuilder contents = new StringBuilder();
-		for (int i = 0; i < messages.length; i ++) {
+			StringBuilder contents = new StringBuilder();
 			for (int j = 0; j < messages.length; j ++) {
-				if (i == j)
-					continue;
-
-				contents.append("Compiling to pattern " + Integer.toString(i + 1) + " from pattern " + Integer.toString(j + 1) + " resulted in: " + messages[i][j] + "\n");
+				contents.append("Compiling to pattern " + Integer.toString(i + 1) + " from pattern " + Integer.toString(j + 1) + " resulted in: " + messages[j] + "\n");
 			}
-		}
 
-		// Now, write everything out to some files.
-		File contentsFile = new File(output_folder + "/RESULTS");
-		FileUtils.write(contentsFile, contents.toString());
+			// Now, write everything out to some files.
+			File contentsFile = new File(output_folder + "/RESULTS_REGEX_" + Integer.toString(i + 1));
+			FileUtils.write(contentsFile, contents.toString());
+		}
 
 		// TODO -- Write the FSAs out to a file.
 	}
 
 	public static Generator compile(String toStr, String fromStr) {
+		return compileSingleState(toStr, fromStr);
+	}
+
+	public static Generator compileSingleState(String toStr, String fromStr) {
 		// Parse the individual regular expressions.
 		ParseTree to = parse(toStr);
 		ParseTree from = parse(fromStr);
