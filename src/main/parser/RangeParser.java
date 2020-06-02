@@ -42,12 +42,28 @@ public class RangeParser {
 		}
 
 		// Now, convert this to a character array.
-		char[] result = new char[stack.size()];
+		if (negate) {
+			// Elements NOT in the stack are the ones to return.
+			char[] result = new char[256 - stack.size()];
 
-		for (int i = 0; i < result.length; i ++) {
-			result[i] = stack.pop();
+			int insert_index = 0;
+			for (int i = 0; i < 256; i ++) {
+				if (! stack.contains((char) i)) {
+					result[insert_index] = (char) i;
+					insert_index += 1;
+				}
+			}
+
+			return result;
+		} else {
+			// Elements in the stack are the ones to return.
+			char[] result = new char[stack.size()];
+
+			for (int i = 0; i < result.length; i ++) {
+				result[i] = stack.pop();
+			}
+
+			return result;
 		}
-
-		return result;
 	}
 }

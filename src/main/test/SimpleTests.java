@@ -29,4 +29,11 @@ public class SimpleTests {
 		result = Main.compileSingleState("ab", "[a-z]").generate();
 		assertEquals("Compilation must not succeed", result, null);
 	}
+
+	@Test
+	public void CheckNegatedRanges() {
+		FSA result;
+		result = Main.compileSingleState("xy", "[^a][b-z]").generate();
+		assertEquals("Compilation must not succeed", result, null);
+	}
 }

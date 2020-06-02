@@ -58,8 +58,14 @@ public class RegexCharacterListGenerator extends PCREBaseListener {
 			String contents = node.getText();
 			assert(contents.length() == 1);
 			char character = contents.charAt(0);
-			if (character == '-') {
+			if (character == '-' || character == '^') {
 				characterClassChars.add(character);
+			} else if (character == '[' || character == ']') {
+				// Do nothing -- these are accounted for.
+			} else {
+				if (! characterClassChars.contains(character)) {
+					System.out.println("WARNING! SEEMING TO IGNORE CHARACTER: " + character);
+				}
 			}
 		}
 	}
