@@ -6,9 +6,27 @@ public class MatchElement {
 	MatchType matchType;
 	PCREParser.ElementContext elt;
 
+	Integer minRepeats;
+	Integer maxRepeats;
+
 	public MatchElement(PCREParser.ElementContext elt) {
 		this.elt = elt;
 		matchType = computeMatchType();
+	}
+
+	public int getMinRepeats() {
+		return minRepeats;
+	}
+
+	public int getMaxRepeats() {
+		return maxRepeats;
+	}
+
+	public void printSizes() {
+		System.out.print("Min: ");
+		System.out.print(minRepeats);
+		System.out.print(", Max: ");
+		System.out.println(maxRepeats);
 	}
 
 	private MatchType computeMatchType() {
@@ -21,16 +39,53 @@ public class MatchElement {
 		PCREParser.QuantifierContext quantifier = elt.quantifier();
 
 		if (quantifier == null) {
+			minRepeats = 1;
+			maxRepeats = 1;
+
 			return MatchType.EXACT_MATCH;
 		} else {
 			String text = quantifier.getText();
-			switch(text) {
-				case "+":
-					return MatchType.PLUS_MATCH;
-				case "*":
-					return MatchType.STAR_MATCH;
-				default:
-					return MatchType.UNSUPPORTED;
+			if (text.startsWith("{")) {
+				// Do a size parsing.
+				// Actually, you can have something like
+				// {n, m}?, but that's unsupported right now.
+				assert(text.endsWith("}"));
+				String rangeText = text.substring(1, text.length() - 1);
+				String[] rangeElements = rangeText.split(",");
+
+				if (rangeElements.length == 1) {
+					// Fixed range.
+					minRepeats = Integer.parseInt(rangeElements[0]);
+					maxRepeats = minRepeats;
+					return MatchType.FIXED_NUMBER;
+				} else {
+					// Can be either n,m or n,
+					minRepeats = Integer.parseInt(rangeElements[0]);
+
+					if (rangeElements[1] == "") {
+						// This really should mean infinity.
+						maxRepeats = Integer.MAX_VALUE;
+					} else {
+						maxRepeats = Integer.parseInt(rangeElements[1]);
+					}
+
+					return MatchType.MATCH_RANGE;
+				}
+
+				// Now, there is one of 
+			} else {
+				switch(text) {
+					case "+":
+						minRepeats = 1;
+						maxRepeats = Integer.MAX_VALUE;
+						return MatchType.PLUS_MATCH;
+					case "*":
+						minRepeats = 0;
+						maxRepeats = Integer.MAX_VALUE;
+						return MatchType.STAR_MATCH;
+					default:
+						return MatchType.UNSUPPORTED;
+				}
 			}
 		}
 	}

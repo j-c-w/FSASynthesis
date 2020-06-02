@@ -64,11 +64,15 @@ public class SingleStateGenerator implements Generator {
 			MatchType fromEltMatchType = fromEltGroup.matchType();
 			MatchType toEltGroupMatchType = toEltGroup.matchType();
 
-			if (fromEltMatchType != toEltGroupMatchType) {
+			if (fromEltGroup.getMinRepeats() != toEltGroup.getMinRepeats()
+				|| fromEltGroup.getMaxRepeats() != toEltGroup.getMaxRepeats()) {
 				// We can't mesh these right now with this
 				// style.  This is, e.g. one is [A-z]+ and
 				// the other is [p-q]*.
-				diagnostic = "Element match types " + fromEltMatchType.toString() + " and " + toEltGroupMatchType.toString() + " do not match";
+				// I think that it should be possible to do
+				// some cross-matching, but am still thinking about that.
+				diagnostic = "Element min match lengths " + Integer.toString(fromEltGroup.getMinRepeats()) + " and " + Integer.toString(toEltGroup.getMinRepeats()) + " or max match lengths " + 
+					Integer.toString(fromEltGroup.getMaxRepeats()) + " and " + Integer.toString(toEltGroup.getMaxRepeats()) + " do not match";
 				return null;
 			}
 
@@ -91,6 +95,8 @@ public class SingleStateGenerator implements Generator {
 				case PLUS_MATCH:
 				case STAR_MATCH:
 				case EXACT_MATCH:
+				case MATCH_RANGE:
+				case FIXED_NUMBER:
 					// Go through each element in the from
 					// set and map it to the to set.
 					if (fromSet.getLength() != toSet.getLength()) {
@@ -119,6 +125,9 @@ public class SingleStateGenerator implements Generator {
 				case ALTERNATIVES_MATCH:
 					diagnostic = "Alternative matches (A|B) not supported";
 					// TODO -- We don't handle this right now.
+					return null;
+				case UNSUPPORTED:
+					diagnostic = "Reached an unsupported quantifier type";
 					return null;
 			}
 		}

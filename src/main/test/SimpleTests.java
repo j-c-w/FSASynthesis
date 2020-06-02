@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import main.FSA.FSA;
 import main.Main;
+import main.generator.SingleStateGenerator;
 
 public class SimpleTests {
 	@Test
@@ -35,5 +36,20 @@ public class SimpleTests {
 		FSA result;
 		result = Main.compileSingleState("xy", "[^a][b-z]").generate();
 		assertEquals("Compilation must not succeed", result, null);
+	}
+
+	@Test
+	public void CheckBracketRanges() {
+		FSA result;
+		result = Main.compileSingleState("xx", "[abc]{2,}").generate();
+		assertNotEquals("Compilation must succeed", result, null);
+
+		result = Main.compileSingleState("[abc]{1,10}", "x[xy]{1,9}").generate();
+		assertNotEquals("Compilation must succeed", result, null);
+
+		result = Main.compileSingleState("[abc][def]", "[123]{2}").generate();
+		assertNotEquals("Compilation must succeed", result, null);
+
+		// And some that should fail.
 	}
 }
