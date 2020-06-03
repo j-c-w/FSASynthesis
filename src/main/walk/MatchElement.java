@@ -9,6 +9,8 @@ public class MatchElement {
 	Integer minRepeats;
 	Integer maxRepeats;
 
+	boolean isOptional = false;
+
 	public MatchElement(PCREParser.ElementContext elt) {
 		this.elt = elt;
 		matchType = computeMatchType();
@@ -20,6 +22,10 @@ public class MatchElement {
 
 	public int getMaxRepeats() {
 		return maxRepeats;
+	}
+
+	public boolean isOptional() {
+		return isOptional;
 	}
 
 	public void printSizes() {
@@ -45,11 +51,16 @@ public class MatchElement {
 			return MatchType.EXACT_MATCH;
 		} else {
 			String text = quantifier.getText();
+			if (text.endsWith("?")) {
+				isOptional = true;
+				text = text.substring(0, text.length() - 1);
+			}
 			if (text.startsWith("{")) {
 				// Do a size parsing.
 				// Actually, you can have something like
-				// {n, m}?, but that's unsupported right now.
-				assert(text.endsWith("}"));
+				// {n, m}+, but that's unsupported right now.
+				assert(!text.endsWith("+"));
+
 				String rangeText = text.substring(1, text.length() - 1);
 				String[] rangeElements = rangeText.split(",");
 
@@ -83,7 +94,14 @@ public class MatchElement {
 						minRepeats = 0;
 						maxRepeats = Integer.MAX_VALUE;
 						return MatchType.STAR_MATCH;
+					case "": // This can happen if we get rid of#
+						// bits and peices.
+						minRepeats = 1;
+						maxRepeats = 1;
+						return MatchType.EXACT_MATCH;
 					default:
+						minRepeats = 0;
+						maxRepeats = 0;
 						return MatchType.UNSUPPORTED;
 				}
 			}

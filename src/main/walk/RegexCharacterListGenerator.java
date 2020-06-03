@@ -29,6 +29,24 @@ public class RegexCharacterListGenerator extends PCREBaseListener {
 	}
 
 	@Override
+	public void enterAtom(PCREParser.AtomContext ctx) {
+		String text = ctx.getText();
+		if (text.equals(".")) {
+			// Then handle this here --- this means adding everything
+			// to the character class.
+			char[] allChars = new char[256];
+			for (int i = 0; i < 256; i ++) {
+				allChars[i] = (char) i;
+			}
+			characterList.add(allChars);
+		}
+
+
+		// If the text is not '.', then we let the characterclass
+		// parsing handle it.
+	}
+
+	@Override
 	public void enterCharacter_class(PCREParser.Character_classContext cts) {
 		if (inCharClass == null) {
 			inCharClass = cts;
@@ -71,7 +89,17 @@ public class RegexCharacterListGenerator extends PCREBaseListener {
 	}
 
 	@Override
-	public void enterShared_literal(PCREParser.Shared_literalContext ctx) {
+	public void enterLiteral(PCREParser.LiteralContext ctx) {
+		String contents = ctx.getText();
+		// TODO -- Not 100% sure that this is only being triggered
+		// when I think it is.
+		assert(contents.length() == 1);
+
+		characterList.add(new char[] {contents.charAt(0)});
+	}
+
+	@Override
+	public void enterCc_literal(PCREParser.Cc_literalContext ctx) {
 		String contents = ctx.getText();
 		assert(contents.length() == 1); // If this is more than one
 		// char, not actually sure what it is.  Maybe an escp code?

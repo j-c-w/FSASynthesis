@@ -26,7 +26,6 @@ public class SingleStateGenerator implements Generator {
 		//  Generate a walker that splits the trees
 		//  into arrays of sections, either finite
 		//  or infinite.
-
 		RegexSplitWalker walkerFrom = new RegexSplitWalker();
 		RegexSplitWalker walkerTo = new RegexSplitWalker();
 
@@ -76,6 +75,11 @@ public class SingleStateGenerator implements Generator {
 				return null;
 			}
 
+			if (fromEltGroup.isOptional() != toEltGroup.isOptional()) {
+				diagnostic = "One element group is optional --- and the other is not! (i.e. there is a ? on one and not on the other)";
+				return null;
+			}
+
 			RegexCharacterListGenerator fromSet = new RegexCharacterListGenerator();
 			// For the from set:
 			walker.walk(fromSet, fromEltGroup.tree());
@@ -119,6 +123,71 @@ public class SingleStateGenerator implements Generator {
 								assigned[from] += 1;
 								lookuptable[from] = valid_chars_to[0];
 							}
+
+						}
+
+						// We need to make sure that:
+						// if a character X is in the 'to' set,
+						// but not the 'from' set, then it is takne
+						// to something not in the 'to' set to avoid
+						// false positives.
+						for (char to: valid_chars_to) {
+							boolean in_from_set = false;
+							// Find if the character in 'to' is valid
+							// in the 'from' set.
+							for (char from: valid_chars_from) {
+								if (to == from) {
+									in_from_set = true;
+								}
+							}
+
+							if (in_from_set) {
+								// We just need to make sure
+								// that this is preserved to
+								// something in the too set.
+								char current_to = lookuptable[to];
+								boolean found_match = false;
+
+								// Check that the thing we currently
+								// map this to is good.
+								for (char valid_to: valid_chars_to) {
+									if (current_to == valid_to) {
+										found_match = true;
+									}
+								}
+
+								if (! found_match) {
+									lookuptable[to] = valid_chars_to[0];
+									assigned[to] += 1;
+								} else {
+									if (assigned[to] == 0) {
+										// We need to note that the
+										// assignment of this character
+										// is important.
+										assigned[to] += 1;
+									}
+								}
+							} else {
+								// We need to make sure that this
+								// is taken to something not in the too set.
+								Character non_member_character = getCharacterNotInSet(valid_chars_to);
+								if (non_member_character == null) {
+									diagnostic = "Need to avoid false positives, and a fully recognized set prevents false-positive avoidance";
+									return null;
+								} else {
+									// We need to make the assignment
+									// and note that it is important.
+									if (lookuptable[to] == non_member_character) {
+										// Just note that the assignment is done if it hasn't been noted.
+										if (assigned[to] == 0) {
+											assigned[to] += 1;
+										}
+									} else {
+										lookuptable[to] = non_member_character;
+										assigned[to] += 1;
+									}
+								}
+							}
 						}
 					}
 					break;
@@ -153,5 +222,29 @@ public class SingleStateGenerator implements Generator {
 
 	public String getDiagnostic() {
 		return diagnostic;
+	}
+
+	// Returns the lowest index character not in the set.
+	// Returns null if the set contains everything.
+	// This is quadratic.
+	private Character getCharacterNotInSet(char[] set) {
+		int result = 0;
+
+		while (result < 256) {
+			boolean clean = true;
+			for (char c: set) {
+				if (c == (char) result) {
+					clean = false;
+				}
+			}
+
+			if (clean) {
+				return (char) result;
+			} else {
+				result += 1;
+			}
+		}
+
+		return null;
 	}
 }
